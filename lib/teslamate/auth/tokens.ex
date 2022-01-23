@@ -3,8 +3,8 @@ defmodule TeslaMate.Auth.Tokens do
   import Ecto.Changeset
 
   schema "tokens" do
-    field :refresh, :string
-    field :access, :string
+    field :refresh, TeslaMate.Encrypted.Binary, redact: true
+    field :access, TeslaMate.Encrypted.Binary, redact: true
 
     timestamps()
   end
