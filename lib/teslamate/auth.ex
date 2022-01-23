@@ -14,6 +14,16 @@ defmodule TeslaMate.Auth do
     %Tokens{} |> Tokens.changeset(attrs)
   end
 
+  def can_decrypt_tokens? do
+    case Repo.all(Tokens) do
+      [%Tokens{} = tokens] ->
+        is_binary(tokens.access) and is_binary(tokens.refresh)
+
+      _ ->
+        true
+    end
+  end
+
   def get_tokens do
     case Repo.all(Tokens) do
       [tokens] ->

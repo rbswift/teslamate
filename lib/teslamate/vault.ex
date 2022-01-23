@@ -12,23 +12,25 @@ defmodule TeslaMate.Vault do
   # See https://github.com/danielberkompas/cloak/issues/93
   @iv_length 12
 
-  @impl GenServer
-  def init(config) do
-    config = Keyword.put(config, :ciphers, default: default_chipher(encryption_key()))
-    {:ok, config}
-  end
-
   def default_chipher(key) do
     {Cloak.Ciphers.AES.GCM, tag: "AES.GCM.V1", key: key, iv_length: @iv_length}
   end
 
-  defp encryption_key do
-    key =
-      case System.get_env("ENCRYPTION_KEY") do
-        key when is_binary(key) and byte_size(key) > 0 ->
+  def encryption_key_provided? do
+    case encryption_key() do
+      {:ok, _key} -> true
+      :error -> false
+    end
+  end
+
+  @impl GenServer
+  def init(config) do
+    encryption_key =
+      case encryption_key() do
+        {:ok, key} ->
           key
 
-        _ ->
+        :error ->
           random_key = generate_random_key()
 
           Logger.warn("""
@@ -50,7 +52,19 @@ defmodule TeslaMate.Vault do
           random_key
       end
 
-    :crypto.hash(:sha256, key)
+    config =
+      Keyword.put(config, :ciphers,
+        default: default_chipher(:crypto.hash(:sha256, encryption_key))
+      )
+
+    {:ok, config}
+  end
+
+  defp encryption_key do
+    case System.get_env("ENCRYPTION_KEY") do
+      key when is_binary(key) and byte_size(key) > 0 -> {:ok, key}
+      _ -> :error
+    end
   end
 
   defp generate_random_key do
