@@ -4,6 +4,8 @@ defmodule TeslaMate.Auth do
   """
 
   import Ecto.Query, warn: false
+  require Logger
+
   alias TeslaMate.Repo
 
   ### Tokens
@@ -26,8 +28,12 @@ defmodule TeslaMate.Auth do
 
   def get_tokens do
     case Repo.all(Tokens) do
-      [tokens] ->
+      [%Tokens{} = tokens] when is_binary(tokens.access) and is_binary(tokens.refresh) ->
         tokens
+
+      [%Tokens{}] ->
+        Logger.warning("Could not decrypt API tokens!")
+        nil
 
       [_ | _] = tokens ->
         raise """
