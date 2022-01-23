@@ -8,9 +8,8 @@ defmodule TeslaMate.Vault do
 
   require Logger
 
-  # In AES.GCM, it is important to specify 12-byte IV length for
-  # interoperability with other encryption software. See this GitHub
-  # issue for more details: https://github.com/danielberkompas/cloak/issues/93
+  # With AES.GCM, 12-byte IV length is necessary for interoperability reasons.
+  # See https://github.com/danielberkompas/cloak/issues/93
   @iv_length 12
 
   @impl GenServer
@@ -30,10 +29,7 @@ defmodule TeslaMate.Vault do
           key
 
         _ ->
-          random_key =
-            :crypto.strong_rand_bytes(32)
-            |> Base.encode64()
-            |> binary_part(0, 16)
+          random_key = generate_random_key()
 
           Logger.warn("""
           --------------------------------------------------------------------
@@ -47,7 +43,7 @@ defmodule TeslaMate.Vault do
           Create an environment variable named "ENCRYPTION_KEY" with the value of this
           key and pass it to this application from now on.
 
-          Otherwise, a new login with your API tokens will required after every restart.
+          OTHERWISE, A NEW LOGIN WITH YOUR API TOKENS WILL REQUIRED AFTER EVERY RESTART.
           ------------------------------------------------------------------------------
           """)
 
@@ -55,5 +51,9 @@ defmodule TeslaMate.Vault do
       end
 
     :crypto.hash(:sha256, key)
+  end
+
+  defp generate_random_key do
+    :crypto.strong_rand_bytes(32) |> Base.encode64() |> binary_part(0, 16)
   end
 end
