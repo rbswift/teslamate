@@ -39,7 +39,7 @@ defmodule TeslaMate.Vault do
   end
 
   def encryption_key_provided? do
-    case get_encryption_key() do
+    case get_encryption_key_from_config() do
       {:ok, _key} -> true
       :error -> false
     end
@@ -48,33 +48,32 @@ defmodule TeslaMate.Vault do
   @impl GenServer
   def init(config) do
     encryption_key =
-      case get_encryption_key() do
-        {:ok, key} ->
-          key
+      with :error <- get_encryption_key_from_config(),
+           :error <- get_encryption_key_from_tmp_dir() do
+        key_length = 48 + :rand.uniform(16)
+        random_key = generate_random_key(key_length)
 
-        :error ->
-          key_length = 48 + :rand.uniform(16)
-          random_key = generate_random_key(key_length)
+        Logger.warning("""
+        \n------------------------------------------------------------------------------
+        No ENCRYPTION_KEY was found to encrypt and securly store your API tokens.
 
-          Logger.warning("""
-          \n------------------------------------------------------------------------------
-          No ENCRYPTION_KEY was found to encrypt and securly store your API tokens.
-
-          Therefore, the following randomly generated key will be used instead for this
-          session:
+        Therefore, the following randomly generated key will be used instead for this
+        session:
 
 
-          #{pad(random_key, 80)}
+        #{pad(random_key, 80)}
 
 
-          Create an environment variable named "ENCRYPTION_KEY" with the value set to
-          the key above (or choose your own) and pass it to the application from now on.
+        Create an environment variable named "ENCRYPTION_KEY" with the value set to
+        the key above (or choose your own) and pass it to the application from now on.
 
-          OTHERWISE, A LOGIN WITH YOUR API TOKENS WILL BE REQUIRED AFTER EVERY RESTART!
-          ------------------------------------------------------------------------------
-          """)
+        OTHERWISE, A LOGIN WITH YOUR API TOKENS WILL BE REQUIRED AFTER EVERY RESTART!
+        ------------------------------------------------------------------------------
+        """)
 
-          random_key
+        random_key
+      else
+        {:ok, key} -> key
       end
 
     config =
@@ -97,12 +96,33 @@ defmodule TeslaMate.Vault do
     end
   end
 
-  defp get_encryption_key do
+  defp get_encryption_key_from_config do
     Application.get_env(:teslamate, TeslaMate.Vault)
     |> Access.fetch!(:key)
     |> case do
       key when is_binary(key) and byte_size(key) > 0 -> {:ok, key}
       _ -> :error
+    end
+  end
+
+  # the database migration writes the generated key into a tmp dir
+  # see priv/migrations/20220123131732_encrypt_api_tokens.exs
+  defp get_encryption_key_from_tmp_dir do
+    System.tmp_dir!()
+    |> Path.join("tm_encryption.key")
+    |> File.read()
+    |> case do
+      {:ok, encryption_key} ->
+        Logger.info("""
+        Restored encryption key from tmp dir:
+
+        #{encryption_key}
+        """)
+
+        {:ok, encryption_key}
+
+      _error ->
+        :error
     end
   end
 

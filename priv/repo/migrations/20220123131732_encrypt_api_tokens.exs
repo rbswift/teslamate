@@ -76,6 +76,12 @@ defmodule TeslaMate.Repo.Migrations.EncryptApiTokens do
         required once after starting the application.
         ------------------------------------------------------------------------------
         """)
+
+        with tmp_dir when is_binary(tmp_dir) <- System.tmp_dir(),
+             tmp_path = Path.join(tmp_dir, "tm_encryption.key"),
+             :ok <- File.write(tmp_path, encryption_key) do
+          Logger.info("Wrote encryption key to #{tmp_path}")
+        end
       end
 
       Enum.each(tokens, fn %Tokens{} = tokens ->
