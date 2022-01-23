@@ -2,6 +2,10 @@ defmodule TeslaMate.Vault do
   use Cloak.Vault,
     otp_app: :teslamate
 
+  defmodule Encrypted.Binary do
+    use Cloak.Ecto.Binary, vault: TeslaMate.Vault
+  end
+
   require Logger
 
   # In AES.GCM, it is important to specify 12-byte IV length for
@@ -11,13 +15,12 @@ defmodule TeslaMate.Vault do
 
   @impl GenServer
   def init(config) do
-    config =
-      Keyword.put(config, :ciphers,
-        default:
-          {Cloak.Ciphers.AES.GCM, tag: "AES.GCM.V1", key: encryption_key(), iv_length: @iv_length}
-      )
-
+    config = Keyword.put(config, :ciphers, default: default_chipher(encryption_key()))
     {:ok, config}
+  end
+
+  def default_chipher(key) do
+    {Cloak.Ciphers.AES.GCM, tag: "AES.GCM.V1", key: key, iv_length: @iv_length}
   end
 
   defp encryption_key do
@@ -53,8 +56,4 @@ defmodule TeslaMate.Vault do
 
     :crypto.hash(:sha256, key)
   end
-end
-
-defmodule TeslaMate.Encrypted.Binary do
-  use Cloak.Ecto.Binary, vault: TeslaMate.Vault
 end
