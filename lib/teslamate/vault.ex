@@ -36,17 +36,19 @@ defmodule TeslaMate.Vault do
 
           Logger.warning("""
           \n------------------------------------------------------------------------------
-          No ENCRYPTION_KEY was found to encrypt and decrypt API tokens. Therefore, a
-          random key was generated automatically for you:
+          No ENCRYPTION_KEY was found to encrypt and securly store your API tokens.
+
+          Therefore, the following randomly generated key will be used instead for this
+          session:
 
 
           #{pad(random_key, 80)}
 
 
-          Create an environment variable named "ENCRYPTION_KEY" with the value of this
-          key and pass it to this application from now on.
+          Create an environment variable named "ENCRYPTION_KEY" with the value set to
+          the key above (or choose your own) and pass it to the application from now on.
 
-          OTHERWISE, A LOGIN WITH YOUR API TOKENS WILL BE REQUIRED AFTER EVERY RESTART.
+          OTHERWISE, A LOGIN WITH YOUR API TOKENS WILL BE REQUIRED AFTER EVERY RESTART!
           ------------------------------------------------------------------------------
           """)
 
@@ -64,10 +66,8 @@ defmodule TeslaMate.Vault do
   defp pad(string, width) do
     case String.length(string) do
       len when len < width ->
-        n = div(width - len, 2)
-
         string
-        |> String.pad_leading(n + len)
+        |> String.pad_leading(div(width - len, 2) + len)
         |> String.pad_trailing(width)
 
       _ ->

@@ -449,7 +449,7 @@ msgstr[0] "Trovato %{count} file"
 msgstr[1] "Trovati %{count} files"
 
 #, elixir-format
-#: lib/teslamate_web/templates/layout/root.html.heex:100
+#: lib/teslamate_web/templates/layout/root.html.heex:101
 msgid "Donate"
 msgstr "Fai una donazione"
 
@@ -550,7 +550,7 @@ msgstr "GitHub"
 
 #, elixir-format
 #: lib/teslamate_web/live/settings_live/index.html.heex:274
-#: lib/teslamate_web/templates/layout/root.html.heex:108
+#: lib/teslamate_web/templates/layout/root.html.heex:109
 msgid "Update available"
 msgstr "Aggiornamento disponibile"
 
@@ -616,11 +616,16 @@ msgid "Downloading update"
 msgstr ""
 
 #, elixir-format, ex-autogen
-#: lib/teslamate_web/templates/layout/root.html.heex:80
-msgid "In order for your <strong>Tesla API tokens to be stored securely</strong> in the database, an encryption key must be provided to TeslaMate via the <code>ENCRYPTION_KEY</code> environment variable. Otherwise, a <strong>login will be required after every restart</strong>. For more information see: %{link}"
+#: lib/teslamate_web/templates/layout/root.html.heex:79
+msgid "No encryption key provided!"
 msgstr ""
 
 #, elixir-format, ex-autogen
-#: lib/teslamate_web/templates/layout/root.html.heex:79
-msgid "No encryption key provided!"
+#: lib/teslamate_web/templates/layout/root.html.heex:81
+msgid "For more information see %{link}"
+msgstr ""
+
+#, elixir-format, ex-autogen, fuzzy
+#: lib/teslamate_web/templates/layout/root.html.heex:80
+msgid "In order for your <strong>Tesla API tokens to be stored securely</strong> in the database, an encryption key must be provided to TeslaMate via the <code>ENCRYPTION_KEY</code> environment variable. Otherwise, a <strong>login will be required after every restart</strong>."
 msgstr ""

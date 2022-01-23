@@ -61,17 +61,18 @@ defmodule TeslaMate.Repo.Migrations.EncryptApiTokens do
 
         Logger.warning("""
         \n------------------------------------------------------------------------------
-        No ENCRYPTION_KEY was found to encrypt API tokens. Therefore, a random key was
-        generated automatically:
+        No ENCRYPTION_KEY was found to encrypt and securly store your API tokens.
+
+        Therefore, the following randomly generated key will be used instead:
 
 
                 #{encryption_key}
 
 
-        Create an environment variable named "ENCRYPTION_KEY" with the value set to
-        the key above and pass it to the application from now on.
+        IMPORTANT: Create an environment variable named "ENCRYPTION_KEY" with the value
+        set to the key above and pass it to the application from now on.
 
-        If you choose to use a different key, a new login with your API tokens is
+        If you choose to use a different key, a new login with your API tokens will be
         required once after starting the application.
         ------------------------------------------------------------------------------
         """)

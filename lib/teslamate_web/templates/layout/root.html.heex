@@ -77,7 +77,8 @@
 
       <div class="notification is-warning">
         <p class="title is-5 is-spaced"><%= gettext "No encryption key provided!" %></p>
-        <p class="subtitle is-6"><%= raw(gettext "In order for your <strong>Tesla API tokens to be stored securely</strong> in the database, an encryption key must be provided to TeslaMate via the <code>ENCRYPTION_KEY</code> environment variable. Otherwise, a <strong>login will be required after every restart</strong>. For more information see: %{link}", link: safe_to_string(faq_link)) %></p>
+        <p class="subtitle is-6"><%= raw(gettext "In order for your <strong>Tesla API tokens to be stored securely</strong> in the database, an encryption key must be provided to TeslaMate via the <code>ENCRYPTION_KEY</code> environment variable. Otherwise, a <strong>login will be required after every restart</strong>.") %></p>
+        <p class="subtitle is-6"><%= raw(gettext "For more information see %{link}", link: safe_to_string(faq_link)) %></p>
       </div>
       <% end %>
 
