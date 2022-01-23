@@ -45,6 +45,28 @@ defmodule TeslaMate.Repo.Migrations.EncryptApiTokens do
     end
   end
 
+  defmodule Cache do
+    require Logger
+
+    def store(encryption_key) do
+      Enum.each([System.tmp_dir(), import_dir()], fn dir ->
+        with dir when is_binary(dir) <- dir,
+             path = Path.join(dir, "tm_encryption.key"),
+             :ok <- File.write(path, encryption_key) do
+          Logger.info("Wrote encryption key to #{path}")
+        end
+      end)
+    end
+
+    defp import_dir do
+      path =
+        System.get_env("IMPORT_DIR", "import")
+        |> Path.absname()
+
+      if File.exists?(path), do: path
+    end
+  end
+
   alias TeslaMate.Repo
 
   def change do
@@ -77,11 +99,7 @@ defmodule TeslaMate.Repo.Migrations.EncryptApiTokens do
         ------------------------------------------------------------------------------
         """)
 
-        with tmp_dir when is_binary(tmp_dir) <- System.tmp_dir(),
-             tmp_path = Path.join(tmp_dir, "tm_encryption.key"),
-             :ok <- File.write(tmp_path, encryption_key) do
-          Logger.info("Wrote encryption key to #{tmp_path}")
-        end
+        Cache.store(encryption_key)
       end
 
       Enum.each(tokens, fn %Tokens{} = tokens ->

@@ -49,7 +49,8 @@ defmodule TeslaMate.Vault do
   def init(config) do
     encryption_key =
       with :error <- get_encryption_key_from_config(),
-           :error <- get_encryption_key_from_tmp_dir() do
+           :error <- get_encryption_key_from(System.tmp_dir()),
+           :error <- get_encryption_key_from(import_dir()) do
         key_length = 48 + :rand.uniform(16)
         random_key = generate_random_key(key_length)
 
@@ -105,14 +106,16 @@ defmodule TeslaMate.Vault do
     end
   end
 
-  # the database migration writes the generated key into a tmp dir
+  # the database migration writes the generated key into a tmp dir and a local
+  # 'import' dir if possible. The latter is likely a persistent volume for a
+  # lot of users of the Docker image.
   # see priv/migrations/20220123131732_encrypt_api_tokens.exs
-  defp get_encryption_key_from_tmp_dir do
-    with tmp_dir when is_binary(tmp_dir) <- System.tmp_dir(),
-         tmp_path = Path.join(tmp_dir, "tm_encryption.key"),
-         {:ok, encryption_key} <- File.read(tmp_path) do
+  defp get_encryption_key_from(dir) do
+    with dir when is_binary(dir) <- dir,
+         path = Path.join(dir, "tm_encryption.key"),
+         {:ok, encryption_key} <- File.read(path) do
       Logger.info("""
-      Restored encryption key from #{tmp_path}:
+      Restored encryption key from #{path}:
 
       #{encryption_key}
       """)
@@ -121,6 +124,14 @@ defmodule TeslaMate.Vault do
     else
       _ -> :error
     end
+  end
+
+  defp import_dir do
+    path =
+      System.get_env("IMPORT_DIR", "import")
+      |> Path.absname()
+
+    if File.exists?(path), do: path
   end
 
   defp generate_random_key(length) when length > 31 do
