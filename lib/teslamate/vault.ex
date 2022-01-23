@@ -12,6 +12,28 @@ defmodule TeslaMate.Vault do
   # See https://github.com/danielberkompas/cloak/issues/93
   @iv_length 12
 
+  @doc """
+  The default cipher used to encrypt values is AES-265 in GCM mode.
+
+  A random IV is generated for every encryption, and prepends the key tag, IV,
+  and ciphertag to the beginning of the ciphertext:
+
+  +----------------------------------------------------------+----------------------+
+  |                          HEADER                          |         BODY         |
+  +-------------------+---------------+----------------------+----------------------+
+  | Key Tag (n bytes) | IV (12 bytes) | Ciphertag (16 bytes) | Ciphertext (n bytes) |
+  +-------------------+---------------+----------------------+----------------------+
+            |_________________________________
+                                              |
+  +---------------+-----------------+-------------------+
+  | Type (1 byte) | Length (1 byte) | Key Tag (n bytes) |
+  +---------------+-----------------+-------------------+
+
+  The `Key Tag` component of the header consists of a `Type`, `Length`, and
+  `Value` triplet for easy decoding.
+
+  For more information see `Cloak.Ciphers.AES.GCM`.
+  """
   def default_chipher(key) do
     {Cloak.Ciphers.AES.GCM, tag: "AES.GCM.V1", key: key, iv_length: @iv_length}
   end
