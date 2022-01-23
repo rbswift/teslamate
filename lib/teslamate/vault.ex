@@ -76,7 +76,9 @@ defmodule TeslaMate.Vault do
   end
 
   defp get_encryption_key do
-    case System.get_env("ENCRYPTION_KEY") do
+    Application.get_env(:teslamate, TeslaMate.Vault)
+    |> Access.fetch!(:key)
+    |> case do
       key when is_binary(key) and byte_size(key) > 0 -> {:ok, key}
       _ -> :error
     end
