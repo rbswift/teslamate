@@ -24,7 +24,7 @@ defmodule TeslaMate.Repo.Migrations.EncryptApiTokens do
       {type, key} =
         case System.get_env("ENCRYPTION_KEY") do
           key when is_binary(key) and byte_size(key) > 0 -> {:existing, key}
-          _ -> {:generated, generate_key()}
+          _ -> {:generated, generate_key(64)}
         end
 
       setup_vault(key)
@@ -32,8 +32,8 @@ defmodule TeslaMate.Repo.Migrations.EncryptApiTokens do
       {type, key}
     end
 
-    defp generate_key do
-      :crypto.strong_rand_bytes(32) |> Base.encode64() |> binary_part(0, 16)
+    defp generate_key(length) when length > 31 do
+      :crypto.strong_rand_bytes(length) |> Base.encode64(padding: false) |> binary_part(0, length)
     end
 
     defp setup_vault(key) do
@@ -65,7 +65,7 @@ defmodule TeslaMate.Repo.Migrations.EncryptApiTokens do
         generated automatically:
 
 
-                                    #{encryption_key}
+                #{encryption_key}
 
 
         Create an environment variable named "ENCRYPTION_KEY" with the value set to

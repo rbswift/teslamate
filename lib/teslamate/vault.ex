@@ -31,7 +31,8 @@ defmodule TeslaMate.Vault do
           key
 
         :error ->
-          random_key = generate_random_key()
+          key_length = 48 + :rand.uniform(16)
+          random_key = generate_random_key(key_length)
 
           Logger.warning("""
           \n------------------------------------------------------------------------------
@@ -39,7 +40,7 @@ defmodule TeslaMate.Vault do
           random key was generated automatically for you:
 
 
-                                      #{random_key}
+          #{pad(random_key, 80)}
 
 
           Create an environment variable named "ENCRYPTION_KEY" with the value of this
@@ -60,6 +61,20 @@ defmodule TeslaMate.Vault do
     {:ok, config}
   end
 
+  defp pad(string, width) do
+    case String.length(string) do
+      len when len < width ->
+        n = div(width - len, 2)
+
+        string
+        |> String.pad_leading(n + len)
+        |> String.pad_trailing(width)
+
+      _ ->
+        string
+    end
+  end
+
   defp get_encryption_key do
     case System.get_env("ENCRYPTION_KEY") do
       key when is_binary(key) and byte_size(key) > 0 -> {:ok, key}
@@ -67,7 +82,7 @@ defmodule TeslaMate.Vault do
     end
   end
 
-  defp generate_random_key do
-    :crypto.strong_rand_bytes(32) |> Base.encode64() |> binary_part(0, 16)
+  defp generate_random_key(length) when length > 31 do
+    :crypto.strong_rand_bytes(length) |> Base.encode64(padding: false) |> binary_part(0, length)
   end
 end
