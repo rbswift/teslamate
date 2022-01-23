@@ -4,11 +4,17 @@ defmodule TeslaMate.Vault do
 
   require Logger
 
+  # In AES.GCM, it is important to specify 12-byte IV length for
+  # interoperability with other encryption software. See this GitHub
+  # issue for more details: https://github.com/danielberkompas/cloak/issues/93
+  @iv_length 12
+
   @impl GenServer
   def init(config) do
     config =
       Keyword.put(config, :ciphers,
-        default: {Cloak.Ciphers.AES.GCM, tag: "AES.GCM.V1", key: encryption_key()}
+        default:
+          {Cloak.Ciphers.AES.GCM, tag: "AES.GCM.V1", key: encryption_key(), iv_length: @iv_length}
       )
 
     {:ok, config}
