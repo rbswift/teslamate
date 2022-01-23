@@ -17,7 +17,7 @@ defmodule TeslaMate.Vault do
   end
 
   def encryption_key_provided? do
-    case encryption_key() do
+    case get_encryption_key() do
       {:ok, _key} -> true
       :error -> false
     end
@@ -26,15 +26,15 @@ defmodule TeslaMate.Vault do
   @impl GenServer
   def init(config) do
     encryption_key =
-      case encryption_key() do
+      case get_encryption_key() do
         {:ok, key} ->
           key
 
         :error ->
           random_key = generate_random_key()
 
-          Logger.warn("""
-          --------------------------------------------------------------------
+          Logger.warning("""
+          \n------------------------------------------------------------------------------
           No ENCRYPTION_KEY was found to encrypt and decrypt API tokens. Therefore, a
           random key was generated automatically for you:
 
@@ -45,7 +45,7 @@ defmodule TeslaMate.Vault do
           Create an environment variable named "ENCRYPTION_KEY" with the value of this
           key and pass it to this application from now on.
 
-          OTHERWISE, A NEW LOGIN WITH YOUR API TOKENS WILL REQUIRED AFTER EVERY RESTART.
+          OTHERWISE, A LOGIN WITH YOUR API TOKENS WILL BE REQUIRED AFTER EVERY RESTART.
           ------------------------------------------------------------------------------
           """)
 
@@ -60,7 +60,7 @@ defmodule TeslaMate.Vault do
     {:ok, config}
   end
 
-  defp encryption_key do
+  defp get_encryption_key do
     case System.get_env("ENCRYPTION_KEY") do
       key when is_binary(key) and byte_size(key) > 0 -> {:ok, key}
       _ -> :error
