@@ -108,21 +108,18 @@ defmodule TeslaMate.Vault do
   # the database migration writes the generated key into a tmp dir
   # see priv/migrations/20220123131732_encrypt_api_tokens.exs
   defp get_encryption_key_from_tmp_dir do
-    System.tmp_dir!()
-    |> Path.join("tm_encryption.key")
-    |> File.read()
-    |> case do
-      {:ok, encryption_key} ->
-        Logger.info("""
-        Restored encryption key from tmp dir:
+    with tmp_dir when is_binary(tmp_dir) <- System.tmp_dir(),
+         tmp_path = Path.join(tmp_dir, "tm_encryption.key"),
+         {:ok, encryption_key} <- File.read(tmp_path) do
+      Logger.info("""
+      Restored encryption key from #{tmp_path}:
 
-        #{encryption_key}
-        """)
+      #{encryption_key}
+      """)
 
-        {:ok, encryption_key}
-
-      _error ->
-        :error
+      {:ok, encryption_key}
+    else
+      _ -> :error
     end
   end
 
