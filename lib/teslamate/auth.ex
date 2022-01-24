@@ -17,23 +17,19 @@ defmodule TeslaMate.Auth do
   end
 
   def can_decrypt_tokens? do
-    case Repo.all(Tokens) do
-      [%Tokens{} = tokens] ->
+    case get_tokens() do
+      %Tokens{} = tokens ->
         is_binary(tokens.access) and is_binary(tokens.refresh)
 
-      _ ->
+      nil ->
         true
     end
   end
 
   def get_tokens do
     case Repo.all(Tokens) do
-      [%Tokens{} = tokens] when is_binary(tokens.access) and is_binary(tokens.refresh) ->
+      [%Tokens{} = tokens] ->
         tokens
-
-      [%Tokens{}] ->
-        Logger.warning("Could not decrypt API tokens!")
-        nil
 
       [_ | _] = tokens ->
         raise """
